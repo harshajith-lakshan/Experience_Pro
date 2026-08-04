@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+      <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income &amp; Expense Tracker</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Lucide & Phosphor Icons -->
+    <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Flatpickr CSS & MonthSelect CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
+
+    <!-- Choices.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css?v=1.1">
+    
+</head>
+<body>
+  
+    <div id="welcomePopup" class="modal-backdrop">
+        <div class="modal-content animate-pop" style="text-align: center; max-width: 400px;">
+            <div class="welcome-brand"><i data-lucide="circle-dollar-sign" width="26" height="26"></i></div>
+            <h2 style="color: var(--text-color); margin-bottom: 10px;">Welcome Back!</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 18px; font-size: 0.86rem;">Track your income and expenses effortlessly.</p>
+            <button onclick="window.closePopup()" class="primary-action">Get Started</button>
+        </div>
+    </div>
+
+    <div id="loading-screen" class="auth-loading-overlay">
+      <div class="cash-loader">
+        <div class="cash-loader__image">
+          <div class="cash-loader__coin">
+            <img src="https://www.dropbox.com/s/fzc3fidyxqbqhnj/loader-coin.png?raw=1" alt="Coin">
+          </div>
+          <div class="cash-loader__hand">
+            <img src="https://www.dropbox.com/s/y8uqvjn811z6npu/loader-hand.png?raw=1" alt="Hand">
+          </div>
+        </div>
+      </div>
+      <span style="margin-top: 15px;">Loading your tracker...</span>
+    </div>
+
+    <div class="controls top-controls">
+    <div class="custom-dropdown lang-dropdown" id="lang-dropdown-wrapper">
+        <select id="lang-switcher" class="hidden-select" style="display: none;">
+            <option value="en">English</option>
+            <option value="si">සිංහල</option>
+            <option value="ta">தமிழ்</option>
+        </select>
+
+        <button class="dropdown-toggle lang-toggle" type="button" id="lang-dropdown-btn">
+            <span id="selected-lang-text">English</span>
+            <i class="chevron-icon"></i>
+        </button>
+
+        <div class="dropdown-menu lang-menu">
+            <div class="dropdown-item" data-value="en">English</div>
+            <div class="dropdown-item" data-value="si">සිංහල</div>
+            <div class="dropdown-item" data-value="ta">தமிழ்</div>
+        </div>
+    </div>
+
+    <button id="theme-toggle" class="control-btn" title="Toggle Theme">
+        <i data-lucide="moon" width="18" height="18"></i>
+    </button>
+</div>
+
+
+    <div class="reminder-controls reminder-container">
+        <button id="reminder-toggle-btn" class="control-btn" title="Toggle 9:30 PM Daily Reminder">
+            <i data-lucide="bell" width="18" height="18"></i>
+        </button>
+        <button id="test-reminder-btn" class="control-btn" title="Test Notification Instantly">
+            <i data-lucide="zap" width="18" height="18"></i>
+        </button>
+    </div>
+
+    <section id="auth-screen" class="view-section active" style="padding: 76px 16px 24px;">
+        <div class="glow-card-box" id="auth-glow-box">
+            <span></span>
+            <div class="glow-content-wrapper wrapper">
+                <div class="auth-brand title-text">
+                    <div class="brand-mark">
+                        <img src="Logo.webp" alt="App Logo" class="auth-logo-img">
+                    </div>
+                    <h1 class="title login" id="auth-title-text">Welcome Back</h1>
+                    <p>Track your <b>Income</b> and <b>Expenses</b> effortlessly.</p>
+                </div>
+                
+                <div class="form-container">
+                    <div class="slide-controls auth-toggle">
+                        <input type="radio" name="slide" id="login" checked>
+                        <input type="radio" name="slide" id="signup">
+                        <label for="login" class="slide login">Login</label>
+                        <label for="signup" class="slide signup">Signup</label>
+                        <div class="slider-tab"></div>
+                    </div>
+                    
+                    <div class="auth-form-window">
+                        <div class="form-inner">
+                            <form id="login-form-element" class="login auth-form">
+                                <input type="email" id="login-email" placeholder="Email Address" required>
+                                <input type="password" id="login-password" placeholder="Password" required>
+                                <button type="button" class="password-link" id="forgot-password-link">Forgot password?</button>
+                                <button type="submit" class="primary-action">Login</button>
+                                <button type="button" id="google-login-btn" class="google-action">
+                                    Continue with Google
+                                </button>
+                                <div class="signup-link auth-foot">Not a member? <a href="#" id="go-to-signup">Signup now</a></div>
+                            </form>
+
+                            <form id="signup-form-element" class="signup auth-form">
+                                <input type="text" id="signup-name" placeholder="Full Name" required>
+                                <input type="text" id="signup-dob" placeholder="Date of Birth" required>
+                                <select id="signup-gender" class="custom-select" required>
+                                    <option value="" disabled selected>Select Gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <input type="email" id="signup-email" placeholder="Email Address" required>
+                                <input type="password" id="signup-password" placeholder="Password" required>
+                                <button type="submit" class="primary-action">Signup</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="main-app" style="display: none;">
+        <main class="dashboard">
+            <header class="dashboard-header">
+                <button class="profile-trigger" id="open-profile-modal">
+                    <div class="avatar" id="user-avatar">U</div>
+                    <div>
+                        <span class="header-kicker" data-i18n="app_title">Income &amp; Expense Tracker</span>
+                        <h2 id="user-name-display">User Name</h2>
+                        <small id="user-bio-display"><i data-lucide="settings" width="12" height="12"></i> Profile Settings</small>
+                    </div>
+                </button>
+            </header>
+
+            <div id="dashboard-section" class="app-section active">
+                <section class="summary-cards">
+                    <div class="summary-card card-balance">
+                        <h3 data-i18n="total_balance">Total Balance</h3>
+                        <p id="total-balance">LKR 0.00</p>
+                    </div>
+                    <div class="summary-card card-income">
+                        <h3 data-i18n="total_income">Total Income</h3>
+                        <p id="total-income">LKR 0.00</p>
+                    </div>
+                    <div class="summary-card card-expense">
+                        <h3 data-i18n="total_expense">Total Expenses</h3>
+                        <p id="total-expense">LKR 0.00</p>
+                    </div>
+                </section>
+                
+                <section class="section-card chart-card">
+                    <div class="section-title">
+                        <div><h3>Income vs Expenses</h3><p>Current split across your finances</p></div>
+                        <i data-lucide="circle-dollar-sign" width="20" height="20" style="color:var(--color-primary)"></i>
+                    </div>
+                    <div style="position: relative; height: 250px; width: 100%;">
+                        <canvas id="financeChart"></canvas>
+                    </div>
+                </section>
+
+                <section class="section-card">
+                    <div class="section-title">
+                        <div><h3 data-i18n="recent_transactions">Recent Transactions</h3></div>
+                    </div>
+                    
+                    <div class="filter-row">
+                        <div class="search-wrap">
+                            <span class="search-icon"><i data-lucide="search" width="16" height="16"></i></span>
+                            <input type="text" id="search-tx" placeholder="Search by category or note...">
+                        </div>
+                        
+                        <select id="filter-type" class="custom-select">
+                            <option value="all">All</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+
+                    <div id="transactions-list" class="transactions-list"></div>
+                </section>
+            </div>
+
+            <div id="wallets-section" class="app-section" style="display: none;">
+                <div class="subpage-head">
+                    <h3><i data-lucide="wallet" width="19" height="19"></i> My Wallets</h3>
+                    <button id="open-add-wallet-btn" class="colored-action blue">
+                        <i data-lucide="plus" width="14" height="14"></i> Add Wallet
+                    </button>
+                </div>
+                <div id="wallets-grid" class="wallet-grid"></div>
+
+                <div style="margin-top:28px;padding-top:22px;border-top:1px solid var(--border-color)">
+                    <div class="subpage-head">
+                        <h3><i data-lucide="hand-coins" width="19" height="19"></i> Loan Tracking</h3>
+                        <button id="open-add-loan-btn" class="colored-action purple">
+                            <i data-lucide="plus" width="14" height="14"></i> Add Loan
+                        </button>
+                    </div>
+                    <div id="loans-grid" class="loan-grid"></div>
+                </div>
+            </div>
+
+            <div id="goals-section" class="app-section" style="display: none;">
+                <div class="subpage-head">
+                    <h3><i data-lucide="target" width="19" height="19"></i> Financial Goals</h3>
+                    <button id="open-add-goal-btn" class="colored-action orange">
+                        <i data-lucide="plus" width="14" height="14"></i> Add Goal
+                    </button>
+                </div>
+                <h4 style="margin-bottom:10px; font-size: 0.9rem; color: var(--text-secondary);">Active Goals</h4>
+                <div id="active-goals-list" class="goal-grid mb-20"></div>
+                
+                <h4 style="margin-bottom:10px; font-size: 0.9rem; color: var(--text-secondary);">Completed Goals <span id="completed-count-badge"></span></h4>
+                <div id="completed-goals-list" class="goal-grid mb-20"></div>
+                
+                <div id="goals-grid" class="goal-grid" style="display: none;"></div>
+            </div>
+
+            <div id="analytics-section" class="app-section" style="display: none;">
+                <div class="subpage-head">
+                    <h3><i data-lucide="file-bar-chart" width="19" height="19"></i> Analytics &amp; Reports</h3>
+                </div>
+
+                <section class="section-card" style="margin-bottom:18px">
+                    <div class="section-title">
+                        <div><h3>Download Monthly Report</h3><p>Export your local tracker data for your records</p></div>
+                        <i data-lucide="download" width="20" height="20" style="color:#e67e22"></i>
+                    </div>
+                    <div class="report-controls">
+                        <input type="month" id="report-month-input">
+                        <button id="export-pdf-btn"><i data-lucide="download" width="15" height="15"></i> Download PDF</button>
+                    </div>
+                </section>
+
+                <div class="analytics-grid">
+                    <section class="section-card">
+                        <div class="section-title">
+                            <h3>Monthly Comparison</h3>
+                        </div>
+                        <div style="position: relative; height: 260px; width: 100%;">
+                            <canvas id="incomeExpenseChart"></canvas>
+                        </div>
+                    </section>
+
+                    <section class="section-card">
+                        <div class="section-title">
+                            <h3>Expense Breakdown</h3>
+                        </div>
+                        <div style="position: relative; height: 260px; width: 100%;">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div class="logout-row">
+                <button id="logout-btn" class="logout-btn" data-action="logout">
+                    <i data-lucide="log-out" width="16" height="16"></i> Logout
+                </button>
+            </div>
+        </main>
+
+        <div class="floating-nav-wrap">
+            <button id="fab-add-transaction" class="fab">
+                <i data-lucide="plus" width="25" height="25"></i>
+            </button>
+            <nav class="floating-nav navbar-container" id="floating-nav">
+                <div class="liquid-glare" id="liquid-glare"></div>
+                <div class="nav-items" id="nav-items">
+                    <div class="active-pill" id="active-pill"></div>
+                    
+                    <button class="nav-item active" data-target="dashboard-section">
+                        <span class="btn-content"><i data-lucide="home" width="20" height="20"></i><span class="nav-text" data-i18n="nav_dashboard">Home</span></span>
+                    </button>
+                    <button class="nav-item" data-target="wallets-section">
+                        <span class="btn-content"><i data-lucide="wallet" width="20" height="20"></i><span class="nav-text" data-i18n="nav_wallets">Wallets</span></span>
+                    </button>
+                    
+                    <div style="width: 54px; flex: none;"></div>
+                    
+                    <button class="nav-item" data-target="goals-section">
+                        <span class="btn-content"><i data-lucide="target" width="20" height="20"></i><span class="nav-text" data-i18n="nav_goals">Goals</span></span>
+                    </button>
+                    <button class="nav-item" data-target="analytics-section">
+                        <span class="btn-content"><i data-lucide="file-bar-chart" width="20" height="20"></i><span class="nav-text" data-i18n="nav_reports">Reports</span></span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+    <div id="transaction-modal" class="modal modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-head">
+                <h2 data-i18n="add_transaction"><i data-lucide="plus-circle" width="19" height="19"></i> Add Transaction</h2>
+                <button id="close-modal" class="modal-close"><i data-lucide="x" width="18" height="18"></i></button>
+            </div>
+            <form id="transaction-form" class="modal-form">
+                <label>Category
+                    <select id="tx-category" required></select>
+                </label>
+                <div class="form-split">
+                    <label>Amount (LKR)
+                        <input type="number" id="tx-amount" placeholder="Amount" required step="any">
+                    </label>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>Wallet</label>
+                        <div class="custom-cat-trigger" id="open-wallet-popup">
+                            <span id="selected-wallet-label">Select Wallet: <b>None</b></span>
+                            <i data-lucide="chevron-down" width="16" height="16"></i>
+                        </div>
+                        <select id="tx-wallet" required style="display: none;">
+                            <option value="" disabled selected>Select Wallet</option>
+                        </select>
+                    </div>
+
+                    <div id="wallet-modal" class="modal modal-backdrop">
+                        <div class="modal-content animate-pop" style="max-width: 320px; text-align: center;">
+                            <div class="modal-head" style="justify-content: center;">
+                                <h3 style="font-size: 1.1rem;"><i data-lucide="wallet" width="18" height="18"></i> Select Wallet</h3>
+                            </div>
+                            
+                            <div id="wallet-popup-list" class="popup-option-list" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto;">
+                                </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-split">
+                    <label>Date
+                        <input type="date" id="tx-date" required>
+                    </label>
+                    <label>Note
+                        <input type="text" id="tx-note" placeholder="Optional note">
+                    </label>
+                </div>
+                <button type="submit" id="save-tx-btn" class="modal-submit" data-i18n="save">Save Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="wallet-modal-add" class="modal modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-head">
+                <h2><i data-lucide="wallet" width="19" height="19"></i> Add New Wallet</h2>
+                <button id="close-wallet-modal" class="modal-close"><i data-lucide="x" width="18" height="18"></i></button>
+            </div>
+            <form id="wallet-form" class="modal-form">
+                <label>Wallet Name
+                    <input type="text" id="wallet-name" placeholder="e.g. Commercial Bank, Cash" required>
+                </label>
+                <div class="form-split">
+                    <!-- Wallet Type Form Field -->
+<div class="form-group" style="margin-top: 10px;">
+    <label>Wallet Type</label>
+    <div class="custom-cat-trigger" id="open-wallet-type-popup">
+        <span id="selected-wallet-type-label">Select Type: <b>Cash</b></span>
+        <i data-lucide="chevron-down" width="16" height="16"></i>
+    </div>
+    
+    <!-- ඔයාගේ Original Hidden Select එක -->
+    <select id="wallet-type" required style="display: none;">
+        <option value="cash" selected>Cash</option>
+        <option value="bank">Bank Account</option>
+        <option value="card">Credit Card</option>
+        <option value="other">Other / Savings</option>
+    </select>
+</div>
+
+<!-- Wallet Type Popup Modal -->
+<div id="wallet-type-modal" class="modal modal-backdrop">
+    <div class="modal-content animate-pop" style="max-width: 340px; text-align: center;">
+        <div class="modal-head" style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
+            <h3 style="font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="layers" width="18" height="18" style="color: var(--color-primary);"></i> Select Wallet Type
+            </h3>
+            <button type="button" id="close-wallet-type-popup" class="modal-close" style="background: none; border: none; cursor: pointer; color: var(--text-secondary);">
+                <i data-lucide="x" width="18" height="18"></i>
+            </button>
+        </div>
+        
+        <!-- Types Dynamically Load වන ස්ථානය -->
+        <div id="wallet-type-popup-list" class="popup-option-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; padding-right: 4px;">
+        </div>
+    </div>
+</div>
+                    <label>Starting Balance (LKR)
+                        <input type="number" id="wallet-initial-balance" step="any" value="0" required>
+                    </label>
+                </div>
+                <button type="submit" id="save-wallet-btn" class="modal-submit blue">Save Wallet</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="loan-modal" class="modal modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-head">
+                <h2><i data-lucide="hand-coins" width="19" height="19"></i> Add New Loan</h2>
+                <button id="close-loan-modal" class="modal-close"><i data-lucide="x" width="18" height="18"></i></button>
+            </div>
+            <form id="loan-form" class="modal-form">
+                <label>Person / Entity Name
+                    <input type="text" id="loan-person" placeholder="ex: Sunil" required>
+                </label>
+               <!-- Loan Type Form Field -->
+<div class="form-group" style="margin-top: 10px;">
+    <label>Loan Type</label>
+    <div class="custom-cat-trigger" id="open-loan-type-popup">
+        <span id="selected-loan-type-label">Select Loan Type: <b>Lent - People owe me</b></span>
+        <i data-lucide="chevron-down" width="16" height="16"></i>
+    </div>
+    
+    <!-- Original Hidden Select -->
+    <select id="loan-type" required style="display: none;">
+        <option value="lent" selected>Lent - People owe me</option>
+        <option value="borrowed">Borrowed - I owe people</option>
+    </select>
+</div>
+
+<!-- Loan Type Popup Modal -->
+<div id="loan-type-modal" class="modal modal-backdrop">
+    <div class="modal-content animate-pop" style="max-width: 340px; text-align: center;">
+        <div class="modal-head" style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
+            <h3 style="font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="arrow-left-right" width="18" height="18" style="color: var(--color-primary);"></i> Select Loan Type
+            </h3>
+            <button type="button" id="close-loan-type-popup" class="modal-close" style="background: none; border: none; cursor: pointer; color: var(--text-secondary);">
+                <i data-lucide="x" width="18" height="18"></i>
+            </button>
+        </div>
+        
+        <!-- Options Dynamically Load වන ස්ථානය -->
+        <div id="loan-type-popup-list" class="popup-option-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; padding-right: 4px;">
+        </div>
+    </div>
+</div>
+
+                <div class="form-split">
+                    <label>Total Amount (LKR)
+                        <input type="number" id="loan-amount" step="0.01" required>
+                    </label>
+                    <label>Due Date
+                        <input type="date" id="loan-due-date" required>
+                    </label>
+                </div>
+                <label>Notes
+                    <input type="text" id="loan-notes" placeholder="Optional notes">
+                </label>
+                <button type="submit" class="modal-submit purple">Save Loan Record</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="goal-modal" class="modal modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-head">
+                <h2><i data-lucide="target" width="19" height="19"></i> Add Financial Goal</h2>
+                <button id="close-goal-modal" class="modal-close"><i data-lucide="x" width="18" height="18"></i></button>
+            </div>
+            <form id="goal-form" class="modal-form">
+                <label>Goal Name
+                    <input type="text" id="goal-name" placeholder="e.g., Buy a Car" required>
+                </label>
+                <div class="form-split">
+                    <label>Target Amount (LKR)
+                        <input type="number" id="goal-target" step="0.01" required>
+                    </label>
+                    <label>Target Date
+                        <input type="date" id="goal-deadline" required>
+                    </label>
+                </div>
+                <button type="submit" id="save-goal-btn" class="modal-submit orange">Save Goal</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="modal modal-backdrop">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="modal-head">
+                <h2><i data-lucide="settings" width="19" height="19"></i> Profile Settings</h2>
+                <button id="close-profile-modal" class="modal-close"><i data-lucide="x" width="18" height="18"></i></button>
+            </div>
+            
+            <div class="profile-section">
+                <label>Full Name<input type="text" id="edit-name"></label>
+                <label>Phone Number<input type="text" id="edit-phone"></label>
+                <label>Email Address<input type="email" id="edit-email"></label>
+                <label>Bio<input type="text" id="edit-bio"></label>
+                <button id="save-profile-info-btn" class="modal-submit blue" style="margin-top: 10px;">Update Profile</button>
+            </div>
+
+            <div class="profile-section">
+                <label>Select Avatar</label>
+                <div id="avatar-grid" class="avatar-picker"></div>
+                <button id="save-avatar-btn" class="modal-submit" style="background:#2ecc71; margin-top: 10px;">Save Avatar</button>
+            </div>
+            
+            <div class="profile-section">
+                <label>Add Custom Category</label>
+                
+                <div class="custom-cat-trigger" id="open-cat-type-popup">
+                    <span id="selected-cat-type-label">Select Category Type: <b>Expense</b></span>
+                    <i data-lucide="chevron-down" width="16" height="16"></i>
+                </div>
+
+                <input type="text" id="custom-cat-name" placeholder="Category Name..." style="margin-top: 10px;">
+                
+                <button id="save-custom-cat-btn" class="modal-submit" style="background:#9b59b6; margin-top: 10px;">Add Category</button>
+            </div>
+
+            <div id="cat-type-modal" class="modal modal-backdrop">
+                <div class="modal-content animate-pop" style="max-width: 320px; text-align: center;">
+                    <div class="modal-head" style="justify-content: center;">
+                        <h3 style="font-size: 1.1rem;"><i data-lucide="layers" width="18" height="18"></i> Select Category Type</h3>
+                    </div>
+                    <div class="popup-option-list" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                        <button class="popup-select-btn active" data-type="expense">
+                            <i data-lucide="arrow-down-circle" style="color: var(--color-expense);"></i> Expense Category
+                        </button>
+                        <button class="popup-select-btn" data-type="income">
+                            <i data-lucide="arrow-up-circle" style="color: var(--color-income);"></i> Income Category
+                        </button>
+                    </div>
+                    <select id="custom-cat-type" style="display: none;">
+                        <option value="expense" selected>Expense</option>
+                        <option value="income">Income</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="printable-report" style="display: none;">
+        <div style="font-family: 'Poppins', Arial, sans-serif; padding: 40px; color: #1e293b; max-width: 800px; margin: 0 auto; background: #ffffff; box-sizing: border-box;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 25px;">
+                <div>
+                    <h1 style="margin: 0; color: #1e293b; font-size: 26px; font-weight: 700;">Financial Summary Report</h1>
+                    <p id="rep-date-range-sub" style="margin: 5px 0 0 0; color: #64748b; font-size: 14px; font-weight: 500;"></p>
+                </div>
+                <div style="text-align: right;">
+                    <span style="background: #3b82f6; color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold;">OFFICIAL STATEMENT</span>
+                </div>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div id="rep-user-avatar-box" style="width: 50px; height: 50px; border-radius: 50%; background: #3b82f6; color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; overflow: hidden;">U</div>
+                    <div>
+                        <h3 id="rep-user-name" style="margin: 0; font-size: 18px; color: #1e293b;">User Name</h3>
+                        <p id="rep-user-email" style="margin: 3px 0 0 0; font-size: 13px; color: #64748b;"></p>
+                        <p id="rep-user-phone-bio" style="margin: 3px 0 0 0; font-size: 12px; color: #94a3b8; font-style: italic;"></p>
+                    </div>
+                </div>
+                <div style="text-align: right; font-size: 12px; color: #64748b;">
+                    <p style="margin: 0;"><strong>Generated Date:</strong> <span id="rep-gen-date"></span></p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                <div style="flex: 1; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 15px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 12px; color: #065f46; font-weight: bold; display: block; text-transform: uppercase;">Total Income</span>
+                    <strong id="rep-tot-income" style="font-size: 18px; color: #10b981;">LKR 0.00</strong>
+                </div>
+                <div style="flex: 1; background: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 12px; color: #991b1b; font-weight: bold; display: block; text-transform: uppercase;">Total Expenses</span>
+                    <strong id="rep-tot-expense" style="font-size: 18px; color: #ef4444;">LKR 0.00</strong>
+                </div>
+                <div style="flex: 1; background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 10px; text-align: center;">
+                    <span style="font-size: 12px; color: #1e40af; font-weight: bold; display: block; text-transform: uppercase;">Net Balance</span>
+                    <strong id="rep-net-balance" style="font-size: 18px; color: #3b82f6;">LKR 0.00</strong>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <h3 style="font-size: 15px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 12px;">📊 Visual Analytics (Charts)</h3>
+                <div style="display: flex; gap: 20px; justify-content: space-between;">
+                    <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; text-align: center;">
+                        <p style="font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 5px;">Income vs Expense Bar Analytics</p>
+                        <img id="rep-chart-img-1" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="max-width: 100%; height: 160px; object-fit: contain;" alt="Bar Chart">
+                    </div>
+                    <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; text-align: center;">
+                        <p style="font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 5px;">Category Expense Breakdown</p>
+                        <img id="rep-chart-img-2" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="max-width: 100%; height: 160px; object-fit: contain;" alt="Doughnut Chart">
+                    </div>
+                </div>
+            </div>
+            
+            <div id="rep-goals-container" style="margin-bottom: 25px;"></div>
+
+            <div>
+                <h3 style="font-size: 15px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 12px;">📋 Detailed Transactions for the Month</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                    <thead>
+                        <tr style="background: #3b82f6; color: white;">
+                            <th style="padding: 10px; text-align: left; border-top-left-radius: 6px;">Date</th>
+                            <th style="padding: 10px; text-align: left;">Category</th>
+                            <th style="padding: 10px; text-align: left;">Wallet</th>
+                            <th style="padding: 10px; text-align: left;">Note</th>
+                            <th style="padding: 10px; text-align: right; border-top-right-radius: 6px;">Amount (LKR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="printable-tbody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<div id="month-picker-modal" class="modal modal-backdrop">
+    <div class="modal-content animate-pop" style="max-width: 340px; padding: 20px;">
+        <div class="modal-head" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
+            <button type="button" id="mp-prev-year" class="icon-btn" style="background: none; border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 10px; cursor: pointer; color: var(--text-color);">
+                <i data-lucide="chevron-left" width="18" height="18"></i>
+            </button>
+            <span id="mp-current-year" style="font-size: 1.1rem; font-weight: 700; color: var(--text-color);">2026</span>
+            <button type="button" id="mp-next-year" class="icon-btn" style="background: none; border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 10px; cursor: pointer; color: var(--text-color);">
+                <i data-lucide="chevron-right" width="18" height="18"></i>
+            </button>
+        </div>
+
+        <div id="mp-months-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
+            </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+            <button type="button" id="close-month-picker" class="btn btn-secondary" style="padding: 8px 16px; border-radius: 8px;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+    
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Choices.js JS -->
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
+    <!-- Flatpickr JS & MonthSelect Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+
+    <!-- html2canvas & jsPDF (Monthly PDF Report එක Generate කිරීමට) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Application Custom Scripts -->
+    <script type="module" src="firebase-db.js"></script>
+    <script type="module" src="app.js"></script>
+    <script src="script.js"></script>
+    
+</body>
+</html>
+
+
